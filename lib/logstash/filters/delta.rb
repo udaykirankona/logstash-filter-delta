@@ -3,7 +3,7 @@ require "logstash/filters/base"
 require "logstash/namespace"
 require 'thread'
 require 'socket'
-
+require 'logger'
 class LogStash::Filters::Delta < LogStash::Filters::Base
 
   TIMEOUT = 30*60 #timeout after 30 minutes
@@ -16,7 +16,8 @@ class LogStash::Filters::Delta < LogStash::Filters::Base
   config :end_tag, :validate => :string, :required => true
   # identifier tag
   config :id_tag, :validate => :string, :required => true
-  
+
+  config :periodic_flush, :validate => :boolean, :default => true
   
 
   public
@@ -26,7 +27,9 @@ class LogStash::Filters::Delta < LogStash::Filters::Base
     @lock = Mutex.new
     # data store for start events
     @ht = {}
-    @logger.info("timeout: #{@timeout} seconds")
+    @logger = LogStash::Logger.new
+    @logger.info("timeout: #{TIMEOUT} seconds")
+    puts "hello"
   end # def register
 
   public
@@ -40,6 +43,7 @@ class LogStash::Filters::Delta < LogStash::Filters::Base
     if(isStartEvent?(event)) #start tag match
       # success
       filter_matched(event)
+      puts "hello 2"
       @logger.info("delta, 'start event' received", start_tag: @start_tag, unique_id_field: @tag_id)      
       @lock.synchronize do
         #add this event into data store, if it does not exist already
@@ -101,4 +105,9 @@ class LogStash::Filters::Delta < LogStash::Filters::Base
     return new_event
   end
 
+  public 
+  def flush(options = {})
+    puts "flush"
+  end
+  
 end # class LogStash::Filters::Example

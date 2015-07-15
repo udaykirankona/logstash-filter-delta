@@ -5,7 +5,7 @@ describe LogStash::Filters::Delta do
   describe "Set to Hello World" do
     let(:config) do <<-CONFIG
       filter {
-        example {
+        delta {
           message => "Hello World"
         }
       }
